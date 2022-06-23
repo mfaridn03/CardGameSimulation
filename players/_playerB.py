@@ -1,5 +1,6 @@
 # Bot logic for player B
 from objectss.player import Player
+from objectss.utils import *
 
 import typing
 
@@ -9,7 +10,12 @@ class PlayerB(Player):
         super().__init__("B")
 
     def test(self, isor, ptb):
-        return [self.hand[0]]
+        if isor:
+            valid_single_play = [self.hand[0]]
+        else:
+            valid_single_play = [card for card in self.hand if is_higher_play([card], ptb)]
+            
+        return [valid_single_play[0]]
 
     def play(
         self,

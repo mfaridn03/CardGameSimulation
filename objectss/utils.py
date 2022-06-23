@@ -116,11 +116,12 @@ def is_higher_play(is_this_higher: list, than_this: list):
         return get_triple_score(is_this_higher) > get_triple_score(than_this)
 
 
-def get_card_score(card: str) -> int:
+def get_card_score(card: list) -> int:
     """
     Get the score of a card
     """
-    return RANK_ORDER.index(card[0]), SUIT_ORDER.index(card[1])
+    card_string = card[0]
+    return RANK_ORDER.index(card_string[0]), SUIT_ORDER.index(card_string[1])
 
 
 def get_pair_score(pair: list) -> int:
