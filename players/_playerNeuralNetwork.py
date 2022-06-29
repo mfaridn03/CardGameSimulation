@@ -10,12 +10,15 @@ class PlayerN(Player):
         super().__init__("N")
 
     def test(self, isor, ptb):
-        if isor:
+        if ptb == []:
             valid_single_play = [self.hand[0]]
         else:
             valid_single_play = [card for card in self.hand if is_higher_play([card], ptb)]
-            
-        return [valid_single_play[0]]
+        
+        if valid_single_play == []:
+            return []
+        else:
+            return [valid_single_play[0]]
 
     def play(
         self,

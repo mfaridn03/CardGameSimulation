@@ -2,6 +2,7 @@
 from objectss.exceptions import *
 from objectss.deck import Deck
 from objectss.player import Player
+from objectss.consts import MAX_ROUNDS
 
 import random
 import typing
@@ -19,8 +20,10 @@ class Game:
             "scores": [0, 0, 0, 0],
             "round_no": 0,
         }
+        self.trick_end = False
         self.round_end = False
         self.game_end = False
+        self.last_round_victor = None
 
         self.playerlist = playerlist  # 4 players always
 
@@ -56,40 +59,97 @@ class Game:
         self.init_game()
 
         while not self.game_end:
-            while not self.round_end:
-                self.play_round()
-                break
+            print()
+            print("Beginning Round", self.data["round_no"])
+            print("---------------")
+            self.play_round()
+            print("Player", self.last_round_victor, "has won Round", self.data["round_no"])
 
-            break
+            self.data["round_no"] += 1
+            self.data["is_start_of_round"] = True
+            self.data["round_history"].append([])
+
+
+            #TODO - DEAL HANDS AGAIN
+
         print("Game End")
 
     def play_round(self):
-        # call each player's play() method
-        for player in self.playerlist:
-            move = player.play(
-                self.data["is_start_of_round"],
-                self.data["play_to_beat"],
-                self.data["round_history"],
-                self.data["hand_sizes"],
-                self.data["scores"],
-                self.data["round_no"],
-            )
-            print("Player", player.name, "played", " ".join(move))
 
-            if self.data["is_start_of_round"]:
-                if move is None:
-                    raise InvalidMoveError("Must play a card on round start")
+        self.round_end = False
 
-                if "3D" not in move:
-                    raise InvalidMoveError("Must play 3D on round start")
+        # Might need better naming
+        current_player_index = 0
+        last_played_card_index = None
+        ltw_index = None # ltw_index -> last trick winner index
 
-            for card in move:
-                player.hand.remove(card)
+        while not self.round_end:
+            while not self.trick_end:
+                if (current_player_index == last_played_card_index):
+                    self.trick_end = True
+                    ltw_index = last_played_card_index
+                    continue
 
-            self.data["is_start_of_round"] = False
-            self.data["play_to_beat"] = move
-            self.data["round_history"].append(move)
-            self.data["hand_sizes"] = [len(player.hand) for player in self.playerlist]
+                player = self.playerlist[current_player_index]
+                move = player.play(
+                    self.data["is_start_of_round"],
+                    self.data["play_to_beat"],
+                    self.data["round_history"],
+                    self.data["hand_sizes"],
+                    self.data["scores"],
+                    self.data["round_no"],
+                )
+
+                # Error checking moves
+                if self.data["is_start_of_round"]:
+                    if move == [] or move == None:
+                        raise InvalidMoveError("Must play a card on round start")
+                    if "3D" not in move:
+                        raise InvalidMoveError("Must play 3D on round start")
+
+                # Move is registered as either pass or valid play
+                if move == []:
+                    print("Player", player.name, "passed")
+                else:
+                    for card in move:
+                        player.hand.remove(card)
+                    print("Player", player.name, "played", " ".join(move))
+                    self.data["play_to_beat"] = move
+                    last_played_card_index = current_player_index
+
+                # End current round if any play makes an empty hand
+                if len(player.hand) == 0:
+                    self.trick_end = True
+                    self.round_end = True
+                    self.last_round_victor = player.name
+                    continue
+
+                # Updating round information
+                self.data["is_start_of_round"] = False
+                round_no = self.data["round_no"]
+                self.data["round_history"][round_no].append(move)
+                self.data["hand_sizes"] = [len(player.hand) for player in self.playerlist]
+                current_player_index += 1
+                if current_player_index == 4:
+                    current_player_index = 0
+
+            # Perform this after a trick ends
+            trick_winner = self.playerlist[last_played_card_index]
+            print("Player", trick_winner.name, "has won current Trick")
+            print()
+            
+            # Reset order of play
+            self.playerlist = self.playerlist[ltw_index:] + self.playerlist[:ltw_index]
+            self.trick_end = False
+            # for player in self.playerlist:
+            #     print(player.name  ,end="")
+            # print()
+
+            # Reset trick information
+            current_player_index = 0
+            last_played_card_index = None
+            self.data["play_to_beat"] = []
+
 
 
 if __name__ == "__main__":
