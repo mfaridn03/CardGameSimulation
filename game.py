@@ -16,7 +16,7 @@ class Game:
             "is_start_of_round": True,
             "play_to_beat": [],
             "round_history": [[]],
-            "hand_sizes": [13, 13, 13, 13],
+            "hand_sizes": [0, 0, 0, 0],
             "scores": [0, 0, 0, 0],
             "round_no": 0,
         }
@@ -28,11 +28,17 @@ class Game:
         self.playerlist = playerlist  # 4 players always
 
     def deal(self):
+        # empty all hands
+        for idx, player in enumerate(self.playerlist):
+            player.hand = []
+            self.data["hand_sizes"][idx] = 0
+
         # deal 13 cards each to 4 players
         for _ in range(13):
-            for player in self.playerlist:
+            for idx, player in enumerate(self.playerlist):
                 card = self.deck.deal()
                 player.hand.append(card)
+                self.data["hand_sizes"][idx] += 1
 
     def init_game(self):
         self.deal()
@@ -50,17 +56,19 @@ class Game:
         random.shuffle(otherplayers)
         self.playerlist = [firstplayer] + otherplayers
 
-        for player in self.playerlist:
-            player.sort_hand()
-            print(player.name, ":", player.hand)
-
     def play(self):
         # play the game
         self.init_game()
 
         while not self.game_end:
+            if (self.data["round_no"] >= MAX_ROUNDS):
+                self.game_end = True
+                continue
             print()
             print("Beginning Round", self.data["round_no"])
+            for player in self.playerlist:
+                player.sort_hand()
+                print(player.name, ":", player.hand)
             print("---------------")
             self.play_round()
             print("Player", self.last_round_victor, "has won Round", self.data["round_no"])
@@ -69,10 +77,21 @@ class Game:
             self.data["is_start_of_round"] = True
             self.data["round_history"].append([])
 
+            for index, value in enumerate(self.data["hand_sizes"]):
+                self.data["scores"][index] += value
 
-            #TODO - DEAL HANDS AGAIN
+            self.deck = Deck()
+            self.deck.shuffle()
+            self.deal()
+
+            for idx, player in enumerate(self.playerlist):
+                if "3D" in player.hand:
+                    first_player = idx
+            self.playerlist = self.playerlist[first_player:] + self.playerlist[:first_player]
+
 
         print("Game End")
+        print("Scores:", self.data["scores"])
 
     def play_round(self):
 
@@ -105,6 +124,8 @@ class Game:
                     if move == [] or move == None:
                         raise InvalidMoveError("Must play a card on round start")
                     if "3D" not in move:
+                        print(move)
+                        print(" ".join(player.hand))
                         raise InvalidMoveError("Must play 3D on round start")
 
                 # Move is registered as either pass or valid play
@@ -141,9 +162,6 @@ class Game:
             # Reset order of play
             self.playerlist = self.playerlist[ltw_index:] + self.playerlist[:ltw_index]
             self.trick_end = False
-            # for player in self.playerlist:
-            #     print(player.name  ,end="")
-            # print()
 
             # Reset trick information
             current_player_index = 0
