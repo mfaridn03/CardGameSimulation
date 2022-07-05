@@ -2,8 +2,6 @@
 from objectss.player import Player
 from objectss.utils import *
 
-import typing
-
 
 class PlayerB(Player):
     def __init__(self):

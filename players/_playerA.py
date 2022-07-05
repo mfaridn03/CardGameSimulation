@@ -3,9 +3,6 @@
 from objectss.player import Player
 from objectss.utils import *
 
-import typing
-import itertools
-
 
 class PlayerA(Player):
     def __init__(self):
