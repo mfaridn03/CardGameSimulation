@@ -1,13 +1,11 @@
-# Neural network that attempts to play the game of Big Two
+# Bot logic for player D
 from objectss.player import Player
 from objectss.utils import *
 
-import typing
 
-
-class PlayerN(Player):
+class PlayerD(Player):
     def __init__(self):
-        super().__init__("N")
+        super().__init__("D")
 
     def test(self, isor, ptb):
         if ptb == []:
