@@ -1,5 +1,6 @@
 from objectss.consts import SUIT_ORDER, RANK_ORDER
 from objectss.utils import sort_hand
+from typing import Optional, List
 
 
 class Player:
@@ -14,5 +15,5 @@ class Player:
         # Rank order: 3 4 5 6 7 8 9 10 J Q K A 2
         sort_hand(self.hand)
 
-    def play(self, is_start_of_round, play_to_beat, round_history, hand_sizes, scores, round_no):
+    def play(self, is_start_of_round, play_to_beat, round_history, hand_sizes, scores, round_no) -> Optional[List]:
         pass
