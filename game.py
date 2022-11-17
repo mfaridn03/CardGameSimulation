@@ -66,9 +66,11 @@ class Game:
                 continue
             print()
             print("Beginning Round", self.data["round_no"])
+
             for player in self.playerlist:
                 player.sort_hand()
                 print(player.name, ":", player.hand)
+
             print("---------------")
             self.play_round()
             print("Player", self.last_round_victor, "has won Round", self.data["round_no"])
@@ -123,6 +125,7 @@ class Game:
                 if self.data["is_start_of_round"]:
                     if move == [] or move == None:
                         raise InvalidMoveError("Must play a card on round start")
+                        
                     if "3D" not in move:
                         print(move)
                         print(" ".join(player.hand))
