@@ -123,9 +123,9 @@ class Game:
 
                 # Error checking moves
                 if self.data["is_start_of_round"]:
-                    if move == [] or move == None:
+                    if move == []:
                         raise InvalidMoveError("Must play a card on round start")
-                        
+
                     if "3D" not in move:
                         print(move)
                         print(" ".join(player.hand))
@@ -134,9 +134,11 @@ class Game:
                 # Move is registered as either pass or valid play
                 if move == []:
                     print("Player", player.name, "passed")
+
                 else:
                     for card in move:
                         player.hand.remove(card)
+                        
                     print("Player", player.name, "played", " ".join(move))
                     self.data["play_to_beat"] = move
                     last_played_card_index = current_player_index
