@@ -8,6 +8,8 @@ class PlayerD(Player):
         super().__init__("D")
 
     def test(self, isor, ptb):
+        if isor:
+            return ["3D"]
         if ptb == []:
             valid_single_play = [self.hand[0]]
         else:
