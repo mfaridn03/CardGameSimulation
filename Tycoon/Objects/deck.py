@@ -19,6 +19,8 @@ class Deck:
         return self.cards == []
     
     def reset(self):
+        self.cards = []
+        
         for suit in ["S", "H", "D", "C"]:
             # set up number cards (10 = 0)
             for rank in range(2, 11):
