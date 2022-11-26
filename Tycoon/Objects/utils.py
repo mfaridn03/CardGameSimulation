@@ -31,6 +31,22 @@ def sort_hand(cards: typing.Sequence[str], is_rev=False) -> None:
         
     for card in temp_cards:
         cards.append(card)
+        
+def is_eight_stop(cards: typing.Sequence[str]) -> bool:
+    """
+    Check if a play is an eight stop
+    """
+    temp_cards = [card for card in cards]
+    if JOKER_RED in temp_cards:
+        temp_cards.remove(JOKER_RED)
+    if JOKER_BLACK in temp_cards:
+        temp_cards.remove(JOKER_BLACK)
+    
+    # Isolate ranks of each remaining card, and form a set of these ranks
+    # Sets contain only unique values, so common ranks will be combined into one item
+    # Set size of 1 means that all ranks are common
+    rank_set = set([card[0] for card in temp_cards])
+    return (len(rank_set) == 1 and list(rank_set)[0] == "8")
     
 def is_joker(card: str) -> bool:
     """
@@ -132,7 +148,7 @@ def get_triple_score(triple: list) -> int:
 
 def is_higher_revolution(is_this_higher: list, than_this: list) -> bool:
     """
-    Check if this is a higher five
+    Check if this is a higher revolution
     """
     pass
 
