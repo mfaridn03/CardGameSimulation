@@ -1,5 +1,7 @@
-from Objects.consts import *
 import random
+
+from Objects.consts import *
+from Objects.utils import *
 
 class Deck:
     def __init__(self):
@@ -36,3 +38,5 @@ class Deck:
         # JR = Red Joker, JB = Black Joker
         self.cards.append(JOKER_RED) 
         self.cards.append(JOKER_BLACK)
+
+        sort_hand(self.cards)
