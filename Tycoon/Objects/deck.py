@@ -35,7 +35,7 @@ class Deck:
             for face in ["J", "Q", "K", "A"]:
                 self.cards.append(f"{face}{suit}")
         
-        # JR = Red Joker, JB = Black Joker
+        # ZR = Red Joker, ZB = Black Joker
         self.cards.append(JOKER_RED) 
         self.cards.append(JOKER_BLACK)
 
