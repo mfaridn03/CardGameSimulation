@@ -19,6 +19,48 @@ class TestDeck(unittest.TestCase):
 
         card_list = ["ZR", "AS", "KD"]
         self.assertFalse(is_triple(card_list))
+        
+    def test_get_card_score(self):
+        """
+        Testing the get_card_score function
+        """
+        card_list = ["KS"]
+        self.assertEqual(get_card_score(card_list), 10)
+
+        card_list = ["ZR"]
+        self.assertEqual(get_card_score(card_list), 13)
+        
+        card_list = ["ZR"]
+        self.assertEqual(get_card_score(card_list, is_rev=True), 13)
+
+        card_list = ["3S"]
+        self.assertEqual(get_card_score(card_list), 0)
+        
+        card_list = ["3S"]
+        self.assertEqual(get_card_score(card_list, is_rev=True), 12)
+        
+    def test_get_pair_score(self):
+        """
+        Testing the get_pair_score function
+        """
+        card_list = ["KS", "KD"]
+        self.assertEqual(get_pair_score(card_list), 10)
+        
+        card_list = ["ZB", "KD"]
+        self.assertEqual(get_pair_score(card_list), 10)
+
+        card_list = ["ZR", "ZB"]
+        self.assertEqual(get_pair_score(card_list), 13)
+        
+        card_list = ["ZR", "ZB"]
+        self.assertEqual(get_pair_score(card_list, is_rev=True), 13)
+
+        card_list = ["3S", "3H"]
+        self.assertEqual(get_pair_score(card_list), 0)
+        
+        card_list = ["3S", "ZR"]
+        self.assertEqual(get_pair_score(card_list, is_rev=True), 12)
+
 
     def test_deck_shuffle(self):
         """
@@ -48,6 +90,7 @@ class TestDeck(unittest.TestCase):
         # sort
         sort_hand(new_deck.cards)
         self.assertEqual(original_deck.cards, new_deck.cards)
+        
 
 if __name__ == "__main__":
     unittest.main()

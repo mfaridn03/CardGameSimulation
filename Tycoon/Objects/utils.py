@@ -69,6 +69,11 @@ def is_pair(cards: typing.Sequence[str]) -> bool:
     ranks_match = cards[0][0] == cards[1][0]
     return len(cards) == 2 and (ranks_match or found_joker)
 
+def is_joker_pair(cards: typing.Sequence[str]) -> bool:
+    """
+    Check if both cards of a pair are Jokers
+    """
+    return is_joker(cards[0]) and is_joker(cards[1])
 
 def is_triple(cards: list):
     """
@@ -109,46 +114,106 @@ def is_revolution(cards: list) -> bool:
     return len(rank_set) == 1
 
 
-def is_higher_play(is_this_higher: list, than_this: list):
+def is_higher_play(is_this_higher: list, than_this: list, is_rev=False):
+    """
+    Compare values of two plays, based on rank order and Tycoon rules
+    """
+    if len(is_this_higher) != len(than_this):
+        raise ValueError("Compared lists are of different sizes")
+    if len(is_this_higher) > 4 or len(is_this_higher) < 1:
+        raise ValueError("List sizes are invalid, list is of size " + len(is_this_higher))
+    
     if len(is_this_higher) == 1:
-        return get_card_score(is_this_higher) > get_card_score(than_this)
+        # One exception - if last card was any Joker and next card is the Three of Spades
+        # then the Three of Spades is a higher play
+        if (is_joker(than_this) and is_this_higher == "3S"):
+            return True
+        return get_card_score(is_this_higher, is_rev) > get_card_score(than_this, is_rev)
 
     elif len(is_this_higher) == 2:
-        return get_pair_score(is_this_higher) > get_pair_score(than_this)
+        return get_pair_score(is_this_higher, is_rev) > get_pair_score(than_this, is_rev)
 
     elif len(is_this_higher) == 3:
-        return get_triple_score(is_this_higher) > get_triple_score(than_this)
+        return get_triple_score(is_this_higher, is_rev) > get_triple_score(than_this, is_rev)
+    
+    elif len(is_this_higher) == 4:
+        return get_revolution_score(is_this_higher, is_rev) > get_revolution_score(than_this, is_rev)
 
 
-def get_card_score(card: list) -> int:
+def get_card_score(card: list, is_rev=False) -> int:
     """
     Get the score of a card
+    
+    In regular scoring, singles are scored as such:
+    3   -   0
+    4   -   1
+    5   -   2
+    6   -   3
+    7   -   4
+    8   -   5
+    9   -   6
+    0   -   7
+    J   -   8
+    Q   -   9
+    K   -   10
+    A   -   11
+    2   -   12
+    Z   -   13
     """
     card_string = card[0]
-    return RANK_ORDER.index(card_string[0]), SUIT_ORDER.index(card_string[1])
+    if is_joker(card_string):
+        return 13
+    
+    if is_rev:
+        return RANK_ORDER_REV.index(card_string[0])
+    else:
+        return RANK_ORDER.index(card_string[0])
 
 
-def get_pair_score(pair: list) -> int:
+def get_pair_score(pair: list, is_rev=False) -> int:
     """
     Get the score of a pair
     """
-    rank = RANK_ORDER.index(pair[0][0])
-    suit_scores = [SUIT_ORDER.index(pair[x][1]) for x in range(2)]
-    return rank, max(suit_scores)
+    if is_joker_pair(pair):
+        return 13
+    
+    # Removing all jokers of the pair and then
+    # determining the score of the remaining card
+    temp_cards = [card for card in pair]
+    if JOKER_RED in temp_cards:
+        temp_cards.remove(JOKER_RED)
+    if JOKER_BLACK in temp_cards:
+        temp_cards.remove(JOKER_BLACK)
+        
+    return get_card_score(list(temp_cards[0]), is_rev)
 
 
-def get_triple_score(triple: list) -> int:
+def get_triple_score(triple: list, is_rev=False) -> int:
     """
     Get the score of a triple
     """
-    rank = RANK_ORDER.index(triple[0][0])
-    suit_scores = [SUIT_ORDER.index(triple[x][1]) for x in range(3)]
-    return rank, max(suit_scores)
+    # Removing all jokers of the triple and then
+    # determining the score of the remaining cards
+    temp_cards = [card for card in triple]
+    if JOKER_RED in temp_cards:
+        temp_cards.remove(JOKER_RED)
+    if JOKER_BLACK in temp_cards:
+        temp_cards.remove(JOKER_BLACK)
+        
+    return get_card_score(list(temp_cards[0]), is_rev)
 
 
-def is_higher_revolution(is_this_higher: list, than_this: list) -> bool:
+def get_revolution_score(revolution: list, is_rev=False) -> int:
     """
     Check if this is a higher revolution
     """
-    pass
+    # Removing all jokers of the revolution and then
+    # determining the score of the remaining cards
+    temp_cards = [card for card in revolution]
+    if JOKER_RED in temp_cards:
+        temp_cards.remove(JOKER_RED)
+    if JOKER_BLACK in temp_cards:
+        temp_cards.remove(JOKER_BLACK)
+        
+    return get_card_score(list(temp_cards[0]), is_rev)
 
