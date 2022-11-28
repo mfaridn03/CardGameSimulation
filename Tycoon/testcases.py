@@ -3,6 +3,7 @@ import unittest
 from Objects.utils import *
 from Objects.deck import *
 
+
 class TestDeck(unittest.TestCase):
     def test_is_triple(self):
         """
@@ -48,6 +49,7 @@ class TestDeck(unittest.TestCase):
         # sort
         sort_hand(new_deck.cards)
         self.assertEqual(original_deck.cards, new_deck.cards)
+
 
 if __name__ == "__main__":
     unittest.main()
