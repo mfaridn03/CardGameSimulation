@@ -105,6 +105,7 @@ class Game:
 
     def play_text_based(self):
         self.init_game()
+        print("Game Starting")
 
         while not self.game_end:
             if (self.data["round_no"] >= MAX_ROUNDS):
@@ -160,7 +161,7 @@ class Game:
                 if idx == 0:                      score = 20
                 elif idx == self.num_players - 1: score = 0
                     
-                self.data["scores"][idx] = score
+                self.data["scores"][idx] += score
         else:
             for playername in self.playerlist_orig:
                 idx = self.end_of_round_order.index(playername)
@@ -170,17 +171,24 @@ class Game:
                 elif idx == self.num_players - 2: score = 5
                 elif idx == self.num_players - 1: score = 0
                     
-                self.data["scores"][idx] = score
+                self.data["scores"][idx] += score
         pass
                 
     def reset_player_order(self):
         loser = self.end_of_round_order[-1]
         second_loser = self.end_of_round_order[-2]
-        first_player_idx = self.playerlist_orig.index[loser]
+        sl_idx = self.playerlist_orig.index(second_loser)
+        clockwise = self.playerobjects[sl_idx].choose_play_direction(self.data)
         
+        # Reverse player order if 2nd loser chooses anticlockwise
+        self.playerlist = self.playerlist_orig
+        if not clockwise:
+            self.playerlist.reverse()
         
-        self.playerlist = self.playerlist[first_player:] + self.playerlist[:first_player]
-        self.data["playerlist"] = [p.name for p in self.playerlist]
+        # Rearrange playerlist to start with loser 
+        first_idx = self.playerlist_orig.index(loser)
+        self.playerlist = self.playerlist[first_idx:] + self.playerlist[:first_idx]
+        self.data["playerlist"] = [name for name in self.playerlist]
         pass
 
     def play_round(self):
