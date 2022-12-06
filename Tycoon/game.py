@@ -26,7 +26,7 @@ class Game:
             "round_end_history": [[]],  # First inner lists are per round, containing info from self.end_of_round_order
             "hand_sizes": [],
             "scores": [],               # Score array reflects player order in player_list_original
-            "score_history": [[]],      # Each inner list corresponds to player in playerlist_orig
+            "score_history": [],      # Each inner list corresponds to player in playerlist_orig
             "round_no": 0,
             "trick_no": 0,
             "is_rev": False,
@@ -164,6 +164,7 @@ class Game:
         Since player counts of less than 4 do not allow for this division of scoring,
         only first place and last place are considered as special cases
         """
+        this_round_scores = [0] * self.num_players
         if self.num_players <= 3:
             # Fuck you, why would you do this
             for playername in self.playerlist_orig:
@@ -171,7 +172,8 @@ class Game:
                 score = 10
                 if idx == 0:                      score = 20
                 elif idx == self.num_players - 1: score = 0
-                    
+                
+                this_round_scores[idx] += score
                 self.data["scores"][idx] += score
         else:
             for playername in self.playerlist_orig:
@@ -181,8 +183,10 @@ class Game:
                 elif idx == 1:                    score = 15
                 elif idx == self.num_players - 2: score = 5
                 elif idx == self.num_players - 1: score = 0
-                    
+                
+                this_round_scores[idx] += score
                 self.data["scores"][idx] += score
+        self.data["score_history"].append(this_round_scores)
         pass
                 
     def reset_player_order(self):
