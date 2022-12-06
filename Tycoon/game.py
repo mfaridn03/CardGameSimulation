@@ -229,7 +229,8 @@ class Game:
                 
                 # Check if trick should end
                 if (current_player_index == last_played_card_index \
-                    or is_eight_stop(self.data["play_to_beat"])):           
+                    or is_eight_stop(self.data["play_to_beat"])
+                    or):           
                     pass 
                 
                 # Current player makes a move

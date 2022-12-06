@@ -53,7 +53,13 @@ def is_eight_stop(cards: typing.Sequence[str]) -> bool:
     rank_set = set([card[0] for card in temp_cards])
     return len(rank_set) == 1 and list(rank_set)[0] == "8"
 
-def
+def threespade_played_after_joker(current_trick: list) -> bool:
+    """
+    Check if a 3S was played after a joker
+    """
+    if len(current_trick) < 2:
+        return False
+    return is_joker(current_trick[:-2]) and (current_trick[:-1] == "3S")
 
 def is_joker(card: str) -> bool:
     """
