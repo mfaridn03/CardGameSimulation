@@ -14,5 +14,5 @@ class Player:
         # Rank order: 3 4 5 6 7 8 9 10 J Q K A 2
         sort_hand(self.hand)
 
-    def play(self, is_start_of_round, play_to_beat, round_history, hand_sizes, scores, round_no, is_rev) -> Optional[List]:
+    def play(self, is_start_of_round, is_start_of_game, play_to_beat, round_history, hand_sizes, scores, round_no, is_rev) -> Optional[List]:
         pass

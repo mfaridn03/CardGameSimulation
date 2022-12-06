@@ -13,6 +13,7 @@ class Game:
         self.deck = Deck()
         self.data = {
             "is_start_of_round": True,
+            "is_start_of_game": True,
             "play_to_beat": [],
             "round_history": [[]],
             "hand_sizes": [],
@@ -70,6 +71,7 @@ class Game:
         # Resetting all game data
         self.data = {
             "is_start_of_round": True,
+            "is_start_of_game": True,
             "play_to_beat": [],
             "round_history": [[]],
             "hand_sizes": [],
@@ -85,6 +87,48 @@ class Game:
         self.data["scores"]     = [0] * len(self.playerlist)
 
     def play_text_based(self):
+        self.init_game()
+
+        while not self.game_end:
+            if (self.data["round_no"] >= MAX_ROUNDS):
+                self.game_end = True
+                continue
+
+            
+            self.play_round()
+            print("Player", self.last_round_victor, "has won Round", self.data["round_no"])
+
+            self.data["round_no"] += 1
+            self.data["is_start_of_round"] = True
+            self.data["round_history"].append([])
+
+            for index, value in enumerate(self.data["hand_sizes"]):
+                self.data["scores"][index] += value
+
+            self.deck = Deck()
+            self.deck.shuffle()
+            self.deal()
+
+            for idx, player in enumerate(self.playerlist):
+                if "3D" in player.hand:
+                    first_player = idx
+            self.playerlist = self.playerlist[first_player:] + self.playerlist[:first_player]
+
+
+        print("Game End")
+        print("Scores:", self.data["scores"])
+        pass
+    
+    def print_start_of_round_info(self):
+        """
+        Print start of round info including round number and player hands
+        """
+        print("\nBeginning Round", self.data["round_no"])
+        print("Player hands are:")
+        for player in self.playerlist:
+                player.sort_hand()
+                print(player.name, ":", player.hand)
+        print("-----------------")
         pass
 
     def play_round(self):
