@@ -13,6 +13,10 @@ class Game:
         if len(playerlist) < 3 or len(playerlist) > 54:
             raise NotEnoughPlayersError("Require 2-54 players for a valid game")
         
+        namelist = [p.name for p in playerlist]
+        if len(set(namelist)) < len(playerlist):
+            raise DuplicatePlayerNamesError("Can't have duplicate player names")
+        
         self.num_players = len(playerlist)
         self.deck = Deck()
         self.data = {
