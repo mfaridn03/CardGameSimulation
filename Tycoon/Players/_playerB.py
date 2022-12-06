@@ -1,11 +1,11 @@
-# Bot logic for player A
+# Bot logic for player B
 from Objects.player import Player
 from Objects.utils import *
 
 
-class PlayerA(Player):
+class PlayerB(Player):
     def __init__(self):
-        super().__init__("A")
+        super().__init__("B")
 
     def test(self, isor, isog, ptb, is_rev) -> list:
         # TODO: Define a util function to take a list of cards and pick the lowest value possible play, or otherwise pass

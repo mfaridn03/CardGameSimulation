@@ -5,3 +5,9 @@ class GameException(Exception):
 
 class NotAValidPlayError(GameException):
     pass
+
+class NotEnoughPlayersError(GameException):
+    pass
+
+class DuplicatePlayerNamesError(GameException):
+    pass
