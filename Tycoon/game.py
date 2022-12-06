@@ -153,6 +153,17 @@ class Game:
         pass
     
     def score_players(self):
+        """
+        Players are given scores for a round based on the following rules:
+        First place       - 20 points
+        Second place      - 15 points
+        Second last place - 5 points
+        Last place        - 0 points
+        Other places      - 10 points
+        
+        Since player counts of less than 4 do not allow for this division of scoring,
+        only first place and last place are considered as special cases
+        """
         if self.num_players <= 3:
             # Fuck you, why would you do this
             for playername in self.playerlist_orig:
@@ -175,6 +186,11 @@ class Game:
         pass
                 
     def reset_player_order(self):
+        """
+        Player order is reset for a new round, keeping players in their original seating
+        2nd last place of previous round decides whether play is clockwise or anticlockwise
+        Last place of previous round is first player in current round
+        """
         loser = self.end_of_round_order[-1]
         second_loser = self.end_of_round_order[-2]
         sl_idx = self.playerlist_orig.index(second_loser)
