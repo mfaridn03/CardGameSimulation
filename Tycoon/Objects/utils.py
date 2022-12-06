@@ -53,6 +53,7 @@ def is_eight_stop(cards: typing.Sequence[str]) -> bool:
     rank_set = set([card[0] for card in temp_cards])
     return len(rank_set) == 1 and list(rank_set)[0] == "8"
 
+def
 
 def is_joker(card: str) -> bool:
     """
