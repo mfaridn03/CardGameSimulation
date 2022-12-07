@@ -8,13 +8,7 @@ class Player:
         self.hand = []
         self.order = -1
 
-    def sort_hand(self) -> None:
-        # Sort the cards in the hand
-        # Suit order: D C H S
-        # Rank order: 3 4 5 6 7 8 9 10 J Q K A 2
-        sort_hand(self.hand)
-
-    def play(self, data: dict) -> Optional[List]:
+    def play(self, data: dict) -> list:
         pass
     
     def choose_play_direction(self, data: dict) -> bool:

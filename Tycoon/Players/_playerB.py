@@ -24,7 +24,7 @@ class PlayerB(Player):
         else:
             return [valid_single_play[0]]
 
-    def play(self, data: dict):
+    def play(self, data: dict) -> list:
         # must return None or a list of Card objects where None is a pass
         # will throw error if not valid
         possible_plays = self.test(data["is_start_of_round"], data["is_start_of_game"], data["play_to_beat"], data["is_rev"])

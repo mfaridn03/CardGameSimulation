@@ -59,7 +59,7 @@ def threespade_played_after_joker(current_trick: list) -> bool:
     """
     if len(current_trick) < 2:
         return False
-    return is_joker(current_trick[:-2]) and (current_trick[:-1] == "3S")
+    return is_joker(current_trick[-2]) and (current_trick[-1] == "3S")
 
 def is_joker(card: str) -> bool:
     """
@@ -136,6 +136,9 @@ def is_higher_play(is_this_higher: list, than_this: list, is_rev=False):
     """
     Compare values of two plays, based on rank order and Tycoon rules
     """
+    if is_this_higher == []:
+        return True
+    
     if len(is_this_higher) != len(than_this):
         raise ValueError("Compared lists are of different sizes")
     if len(is_this_higher) > 4 or len(is_this_higher) < 1:
@@ -244,3 +247,6 @@ def get_revolution_score(revolution: list, is_rev=False) -> int:
         temp_cards.remove(JOKER_BLACK)
 
     return get_card_score(list(temp_cards[0]), is_rev)
+
+def name_to_obj(playerlist_orig, playerobjects, name):
+    return playerobjects[playerlist_orig.index(name)]

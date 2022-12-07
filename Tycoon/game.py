@@ -3,6 +3,7 @@ from Objects.exceptions import *
 from Objects.utils import *
 from Objects.deck import Deck
 from Objects.player import Player
+from Players.__players import *
 from Objects.consts import MAX_ROUNDS
 
 import random
@@ -27,11 +28,11 @@ class Game:
             "is_start_of_round": True,
             "is_start_of_game": True,
             "play_to_beat": [],
-            "round_history": [[]],      # First inner lists are per round, second inner lists are per trick, within trick lists are tuples containing player name and card played
-            "round_end_history": [[]],  # First inner lists are per round, containing info from self.end_of_round_order
+            "round_history": [[[]]],    # First inner lists are per round, second inner lists are per trick, within trick lists are tuples containing player name and card played
+            "round_end_history": [],    # First inner lists are per round, containing info from self.end_of_round_order
             "hand_sizes": [],
             "scores": [],               # Score array reflects player order in player_list_original
-            "score_history": [],      # Each inner list corresponds to player in playerlist_orig
+            "score_history": [],        # Each inner list corresponds to player in playerlist_orig
             "round_no": 0,
             "trick_no": 0,
             "is_rev": False,
@@ -45,9 +46,15 @@ class Game:
         
         self.playerlist = []                # Contains names, current order
         self.playerlist_orig = []           # Contains names, original order
-        self.playerobjects = playerlist    # Contains player objects, original order
+        self.playerobjects = playerlist     # Contains player objects, original order
 
-        self.end_of_round_order = []    # 0th index means tycoon, last index means beggar
+        self.num_finished = 0               # Number of players who have finished a round
+        self.end_of_round_order = [None] * self.num_players   # 0th index means tycoon, last index means beggar, this is order in which people finished a round
+        self.finished_players = [False] * self.num_players    # Contains booleans indicating if players have finished for a round
+        
+        self.times_usurped = [0] * self.num_players
+        self.times_started = [0] * self.num_players
+
 
     def deal(self):
         # Reset and shuffle the deck
@@ -90,14 +97,27 @@ class Game:
         self.playerlist_orig = [name for name in self.playerlist]
         self.data["playerlist_orig"] = [name for name in self.playerlist_orig]
         
+        # NECESSARY BUT SHITTY HACK - Order list of player objects based on above player ordering
+        namelist = [p.name for p in self.playerobjects]
+        indexlist = [None] * self.num_players
+        for i, name in enumerate(namelist):
+            indexlist[self.playerlist.index(name)] = self.playerobjects[i]
+        self.playerobjects = [object for object in indexlist]
+            
+            
+        
         # Resetting all game data
         self.data = {
+            "playerlist": [],          
+            "playerlist_orig": [],     
             "is_start_of_round": True,
             "is_start_of_game": True,
             "play_to_beat": [],
-            "round_history": [[]],
+            "round_history": [[[]]],      
+            "round_end_history": [],   
             "hand_sizes": [],
-            "scores": [],
+            "scores": [],              
+            "score_history": [],       
             "round_no": 0,
             "trick_no": 0,
             "is_rev": False,
@@ -107,6 +127,8 @@ class Game:
         self.game_end = False
         self.data["hand_sizes"] = [0] * self.num_players
         self.data["scores"]     = [0] * self.num_players
+        
+        self.second_last_play = None
 
     def play_text_based(self):
         self.init_game()
@@ -121,9 +143,16 @@ class Game:
             self.print_start_of_round_info()
             self.play_round()
             
+            ### DEBUG USAGE
+            # self.end_of_round_order = ["A", "B", "C", "D"]
+            
             # Round has ended, give scores and print winner info
+            self.data["round_end_history"].append(self.end_of_round_order)
             self.score_players()
             print("Player", self.end_of_round_order[0], "has won Round", self.data["round_no"])
+            print("Scores are:")
+            for i, name in enumerate(self.playerlist):
+                print(name + ": " + str(self.data["scores"][i]))
 
             # Reset data at round end
             self.data["round_no"] += 1
@@ -131,16 +160,27 @@ class Game:
             self.data["is_start_of_round"] = True
             self.data["play_to_beat"] = []
             self.data["round_history"].append([])
+            self.data["round_history"][self.data["round_no"]].append([])
             self.data["is_rev"] = False
+            self.round_end = False
+            self.trick_end = False
+            self.finished_players = [False] * self.num_players
+            self.num_finished = 0
 
             self.deal()
 
             # Setup next round player order
             self.reset_player_order()
+            self.end_of_round_order = [None] * self.num_players
 
         # Game has ended, print game status and final scores
         print("Game End")
         print("Scores:", self.data["scores"])
+
+        print()
+        print("Players:", " ".join(self.playerlist_orig))
+        print("times usurped", self.times_usurped)
+        print("times started", self.times_started)
         pass
     
     def print_start_of_round_info(self):
@@ -152,7 +192,7 @@ class Game:
         for name in self.playerlist:
             idx = self.playerlist_orig.index(name)
             playerobj = self.playerobjects[idx]
-            playerobj.sort_hand()
+            sort_hand(playerobj.hand)
             print(playerobj.name, ":", playerobj.hand)
         print("-----------------")
         pass
@@ -170,24 +210,25 @@ class Game:
         only first place and last place are considered as special cases
         """
         this_round_scores = [0] * self.num_players
+        print(self.end_of_round_order)
         if self.num_players <= 3:
             # Fuck you, why would you do this
-            for playername in self.playerlist_orig:
-                idx = self.end_of_round_order.index(playername)
+            for win_order, name in enumerate(self.end_of_round_order):
+                idx = self.playerlist_orig.index(name)
                 score = 10
-                if idx == 0:                      score = 20
-                elif idx == self.num_players - 1: score = 0
+                if win_order == 0:                      score = 20
+                elif win_order == self.num_players - 1: score = 0
                 
                 this_round_scores[idx] += score
                 self.data["scores"][idx] += score
         else:
-            for playername in self.playerlist_orig:
-                idx = self.end_of_round_order.index(playername)
+            for win_order, name in enumerate(self.end_of_round_order):
+                idx = self.playerlist_orig.index(name)
                 score = 10
-                if idx == 0:                      score = 20
-                elif idx == 1:                    score = 15
-                elif idx == self.num_players - 2: score = 5
-                elif idx == self.num_players - 1: score = 0
+                if win_order == 0:                      score = 20
+                elif win_order == 1:                    score = 15
+                elif win_order == self.num_players - 2: score = 5
+                elif win_order == self.num_players - 1: score = 0
                 
                 this_round_scores[idx] += score
                 self.data["scores"][idx] += score
@@ -223,85 +264,141 @@ class Game:
         current_player_index = 0        # Index of current player
         last_played_card_index = None   # Index of the player who last played a card (not pass)
         ltw_index = None                # ltw_index -> last trick winner index
-
+        round_no = self.data["round_no"]
+        
         while not self.round_end:
             while not self.trick_end:
+                #### Tracking info
+                if self.data["is_start_of_round"]:
+                    i = self.playerlist_orig.index(self.playerlist[current_player_index])
+                    self.times_started[i]+=1
                 
                 # Check if trick should end
-                if (current_player_index == last_played_card_index \
-                    or is_eight_stop(self.data["play_to_beat"])
-                    or):           
-                    pass 
+                trick_no = self.data["trick_no"]
+                current_trick = self.data["round_history"][round_no][trick_no]
                 
-                # Current player makes a move
-                player = self.playerlist[current_player_index]
+                if (current_player_index == last_played_card_index \
+                    or is_eight_stop(self.data["play_to_beat"])    \
+                    or threespade_played_after_joker(current_trick)):           
+                    ltw_index = current_player_index
+                    self.trick_end = True
+                    continue
+
+                # Check if player should be skipped (player has run out of cards)
+                if self.finished_players[current_player_index]:
+                    current_player_index = (current_player_index + 1) % self.num_players
+                    continue
+                
+                # Play a move
+                name = self.playerlist[current_player_index]
+                player = name_to_obj(self.playerlist_orig, self.playerobjects, name)
                 move = player.play(self.data)
 
                 # Error checking moves
+                if move == None:
+                    raise NotAValidPlayError("Move played was \"None\", which is invalid")
                 if self.data["is_start_of_round"]:
                     if move == []:
-                        raise InvalidMoveError("Must play a card on round start")
+                        raise NotAValidPlayError("Must play a card on round start")
 
-                    if "3D" not in move:
-                        print(move)
+                    elif self.data["is_start_of_game"] and ("3D" not in move):
+                        print(player.name, "played:", move)
+                        print("Hand was: ", end="")
                         print(" ".join(player.hand))
-                        raise InvalidMoveError("Must play 3D on round start")
-
+                        raise NotAValidPlayError("Must play 3D on round start")
+                
+                if (self.second_last_play != None) and not is_higher_play(move, self.data["play_to_beat"]):
+                    raise NotAValidPlayError(player.name, "played move (" + " ".join(move) + ") which was not a higher play than the one before")
+                
                 # Move is registered as either pass or valid play
                 if move == []:
                     print("Player", player.name, "passed")
-
                 else:
                     for card in move:
                         player.hand.remove(card)
                         
                     print("Player", player.name, "played", " ".join(move))
+                    if self.data["play_to_beat"] != None and self.data["play_to_beat"] != []:
+                        self.second_last_play = move
                     self.data["play_to_beat"] = move
+                
                     last_played_card_index = current_player_index
 
-                # # End current round if any play makes an empty hand
-                # if len(player.hand) == 0:
-                #     self.trick_end = True
-                #     self.round_end = True
-                #     self.last_round_victor = player.name
-                #     continue
+                # React to revolution play
+                if is_revolution(move):
+                    self.data["is_rev"] = not self.data["is_rev"]
+                    
+                # Update player information if hand size is 0
+                if len(player.hand) == 0:
+                    print(player.name, "has emptied their hand!")
+                    self.end_of_round_order[self.num_finished] = player.name
+                    player_idx = self.playerlist.index(player.name)
+                    self.finished_players[player_idx] = True
+                    self.num_finished += 1
+                    
+                    
+                    # Player beat the previous tycoon
+                    if round_no > 0:
+                        prev_tycoon_name = self.data["round_end_history"][round_no - 1][0]
+                        if self.num_finished == 1 and prev_tycoon_name != player.name:
+                            print("Tycoon", prev_tycoon_name, "was beaten, they will now face punishment of Kancho!!!!!!!")
+                            self.end_of_round_order = [self.end_of_round_order[0]] + ([None] * (self.num_players - 2)) + [prev_tycoon_name]
+                            pt_idx = self.playerlist.index(prev_tycoon_name)
+                            self.finished_players[pt_idx] = True
+
+                            #### Tracking info
+                            orig_idx = self.playerlist_orig.index(prev_tycoon_name)
+                            self.times_usurped[orig_idx]+=1
 
                 # Updating round information
                 self.data["is_start_of_round"] = False
-                round_no = self.data["round_no"]
-                self.data["round_history"][round_no].append(move)
-                self.data["hand_sizes"] = [len(player.hand) for player in self.playerlist]
-                current_player_index += 1
-                if current_player_index == 4:
-                    current_player_index = 0
+                self.data["is_start_of_game"]  = False
+                self.data["round_history"][round_no][trick_no].append(move)
+                for i, name in enumerate(self.playerlist):
+                    playerobj = name_to_obj(self.playerlist_orig, self.playerobjects, name)
+                    self.data["hand_sizes"][i] = len(playerobj.hand)
 
-            # Perform this after a trick ends
-            trick_winner = self.playerlist[last_played_card_index]
-            print("Player", trick_winner.name, "has won current Trick")
-            print()
-            
-            # Reset order of play
-            self.playerlist = self.playerlist[ltw_index:] + self.playerlist[:ltw_index]
+                # Update index of next player to play a card, skipping finished players
+                current_player_index = (current_player_index + 1) % self.num_players
+
+            # Print winner of trick
             self.trick_end = False
+            current_player_index = last_played_card_index
+            trick_winner_name = self.playerlist[last_played_card_index]
+            print("Player", trick_winner_name, "has won current Trick")
+            # print()
+            
+            # THIS SHOULD NOT BE DONE, KEEP PLAYERLIST ORDER SAME PER ROUND
+            # CHOOSE TO SKIP PLAYERS AT START OF TRICK LOOP
+            # # Reset order of play to start new trick
+            # self.playerlist = self.playerlist[ltw_index:] + self.playerlist[:ltw_index]
+            # self.trick_end = False
+
+            
 
             # Reset trick information
-            current_player_index = 0
             last_played_card_index = None
             self.data["play_to_beat"] = []
+            self.second_last_play = None
+
+            # Determine if round should end
+            if not (False in self.finished_players):
+                self.round_end = True
+                self.trick_end = True
+
         pass
 
 
 
 if __name__ == "__main__":
-    player1 = Player("A")
-    player2 = Player("B")
-    player3 = Player("C")
-    player4 = Player("D")
+    player1 = PlayerA()
+    player2 = PlayerB()
+    player3 = PlayerC()
+    player4 = PlayerD()
 
     playerlist = [player1, player2, player3, player4]
     
     game = Game(playerlist)
-    game.init_game()
     game.play_text_based()
     
     pass
