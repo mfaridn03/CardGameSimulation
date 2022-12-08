@@ -1,11 +1,11 @@
-# Bot logic for player B
+# Bot logic for slightly more intelligent player STRAT
 from Objects.player import Player
 from Objects.utils import *
 
 
-class PlayerB(Player):
+class PlayerSTRAT(Player):
     def __init__(self):
-        super().__init__("B")
+        super().__init__("STRAT")
 
     def test(self, isor, isog, ptb, is_rev) -> list:
         # TODO: Define a util function to take a list of cards and pick the lowest value possible play, or otherwise pass
@@ -15,19 +15,18 @@ class PlayerB(Player):
         if isog and isor:
             return ["3D"]
         if ptb == []:
-            return [self.hand[0]]
-        elif len(ptb) == 1:
+            pairs = get_pairs(self.hand)
+            if pairs != []:
+                return pairs[0]
+                
+            valid_single_play = [self.hand[0]]
+        else:
             valid_single_play = [card for card in self.hand if is_higher_play([card], ptb, is_rev)]
-            if valid_single_play == []:
-                return []
-            else:
-                return [valid_single_play[0]]
-        elif len(ptb) == 2:
+        
+        if valid_single_play == []:
             return []
-        elif len(ptb) == 3:
-            return []
-        elif len(ptb) == 4:
-            return []
+        else:
+            return [valid_single_play[0]]
 
     def play(self, data: dict) -> list:
         # must return None or a list of Card objects where None is a pass

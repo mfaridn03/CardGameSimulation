@@ -385,8 +385,10 @@ if __name__ == "__main__":
     player2 = PlayerB()
     player3 = PlayerC()
     player4 = PlayerD()
+    #player5 = PlayerSTRAT()
 
     playerlist = [player1, player2, player3, player4]
+    #playerlist = [player1, player2, player3, player4, player5]
     
     game = Game(playerlist)
     game.play_text_based()

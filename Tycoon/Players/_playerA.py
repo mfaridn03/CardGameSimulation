@@ -15,14 +15,19 @@ class PlayerA(Player):
         if isog and isor:
             return ["3D"]
         if ptb == []:
-            valid_single_play = [self.hand[0]]
-        else:
+            return [self.hand[0]]
+        elif len(ptb) == 1:
             valid_single_play = [card for card in self.hand if is_higher_play([card], ptb, is_rev)]
-        
-        if valid_single_play == []:
+            if valid_single_play == []:
+                return []
+            else:
+                return [valid_single_play[0]]
+        elif len(ptb) == 2:
             return []
-        else:
-            return [valid_single_play[0]]
+        elif len(ptb) == 3:
+            return []
+        elif len(ptb) == 4:
+            return []
 
     def play(self, data: dict) -> list:
         # must return None or a list of Card objects where None is a pass

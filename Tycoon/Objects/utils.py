@@ -1,6 +1,7 @@
 # Tycoon hand utilities
 from Objects.consts import *
 import typing
+from itertools import combinations
 
 def sort_hand(cards: typing.Sequence[str], is_rev=False) -> None:
     """
@@ -77,11 +78,25 @@ def is_pair(cards: typing.Sequence[str]) -> bool:
     """
     Check if the cards are a pair
     """
-    cards = sort_hand(cards)
+    sort_hand(cards)
     found_joker = is_joker(cards[0]) or is_joker(cards[1])
     ranks_match = cards[0][0] == cards[1][0]
     return len(cards) == 2 and (ranks_match or found_joker)
 
+def get_pairs(cards: typing.Sequence[str]) -> list:
+    """
+    Generate list of possible pairs from a given hand
+    """
+    result = []
+    if len(cards) < 2: 
+        return result
+    
+    for two_cards in combinations(cards, 2):
+        
+        two_cards = list(two_cards)
+        if is_pair(two_cards):
+            result.append(two_cards)
+    return result
 
 def is_joker_pair(cards: typing.Sequence[str]) -> bool:
     """
