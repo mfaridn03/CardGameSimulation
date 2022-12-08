@@ -19,3 +19,4 @@ class Player:
         result of False means change to opposite direction
         """
         return True
+

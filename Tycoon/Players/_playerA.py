@@ -2,7 +2,6 @@
 from Objects.player import Player
 from Objects.utils import *
 
-
 class PlayerA(Player):
     def __init__(self):
         super().__init__("A")

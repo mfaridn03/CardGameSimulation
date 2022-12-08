@@ -379,7 +379,6 @@ class Game:
         pass
 
 
-
 if __name__ == "__main__":
     player1 = PlayerA()
     player2 = PlayerB()
