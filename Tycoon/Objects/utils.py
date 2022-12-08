@@ -1,8 +1,7 @@
 # Tycoon hand utilities
-import typing
-
 from Objects.consts import *
-
+import typing
+from itertools import combinations
 
 def sort_hand(cards: typing.Sequence[str], is_rev=False) -> None:
     """
@@ -53,12 +52,19 @@ def is_eight_stop(cards: typing.Sequence[str]) -> bool:
     rank_set = set([card[0] for card in temp_cards])
     return len(rank_set) == 1 and list(rank_set)[0] == "8"
 
-
 def is_joker(card: str) -> bool:
     """
     Check if a card is a Joker
     """
     return card == JOKER_RED or card == JOKER_BLACK
+
+def play_is_joker(card: list) -> bool:
+    """
+    Check if a single play is a Joker
+    """
+    if card == None or card == []:
+        return False
+    return is_joker(card[0]) 
 
 
 def has_joker(cards: typing.Sequence[str]) -> bool:
@@ -72,11 +78,25 @@ def is_pair(cards: typing.Sequence[str]) -> bool:
     """
     Check if the cards are a pair
     """
-    cards = sort_hand(cards)
+    sort_hand(cards)
     found_joker = is_joker(cards[0]) or is_joker(cards[1])
     ranks_match = cards[0][0] == cards[1][0]
     return len(cards) == 2 and (ranks_match or found_joker)
 
+def get_pairs(cards: typing.Sequence[str]) -> list:
+    """
+    Generate list of possible pairs from a given hand
+    """
+    result = []
+    if len(cards) < 2: 
+        return result
+    
+    for two_cards in combinations(cards, 2):
+        
+        two_cards = list(two_cards)
+        if is_pair(two_cards):
+            result.append(two_cards)
+    return result
 
 def is_joker_pair(cards: typing.Sequence[str]) -> bool:
     """
@@ -129,6 +149,9 @@ def is_higher_play(is_this_higher: list, than_this: list, is_rev=False):
     """
     Compare values of two plays, based on rank order and Tycoon rules
     """
+    if is_this_higher == []:
+        return True
+    
     if len(is_this_higher) != len(than_this):
         raise ValueError("Compared lists are of different sizes")
     if len(is_this_higher) > 4 or len(is_this_higher) < 1:
@@ -139,7 +162,8 @@ def is_higher_play(is_this_higher: list, than_this: list, is_rev=False):
     if len(is_this_higher) == 1:
         # One exception - if last card was any Joker and next card is the Three of Spades
         # then the Three of Spades is a higher play
-        if is_joker(than_this) and is_this_higher == "3S":
+    
+        if has_joker(than_this) and is_this_higher == ["3S"]:
             return True
         return get_card_score(is_this_higher, is_rev) > get_card_score(
             than_this, is_rev
@@ -237,3 +261,6 @@ def get_revolution_score(revolution: list, is_rev=False) -> int:
         temp_cards.remove(JOKER_BLACK)
 
     return get_card_score(list(temp_cards[0]), is_rev)
+
+def name_to_obj(playerlist_orig, playerobjects, name):
+    return playerobjects[playerlist_orig.index(name)]

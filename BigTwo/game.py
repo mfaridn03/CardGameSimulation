@@ -177,7 +177,7 @@ class Game:
 
 if __name__ == "__main__":
     # test
-    player1 = Player("A")
+    player1 = _playerA()
     player2 = Player("B")
     player3 = Player("C")
     player4 = Player("D")

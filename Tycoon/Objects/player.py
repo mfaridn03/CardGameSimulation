@@ -8,5 +8,15 @@ class Player:
         self.hand = []
         self.order = -1
 
-    def play(self, is_start_of_round, play_to_beat, round_history, hand_sizes, scores, round_no, is_rev) -> Optional[List]:
+    def play(self, data: dict) -> list:
         pass
+    
+    def choose_play_direction(self, data: dict) -> bool:
+        """
+        The 2nd last player must choose whether play is clockwise or counter-clockwise
+        
+        result of True means keep default direction
+        result of False means change to opposite direction
+        """
+        return True
+
