@@ -47,10 +47,12 @@ class Game:
         self.playerlist = []                # Contains names, current order
         self.playerlist_orig = []           # Contains names, original order
         self.playerobjects = playerlist     # Contains player objects, original order
-
+    
         self.num_finished = 0               # Number of players who have finished a round
         self.end_of_round_order = [None] * self.num_players   # 0th index means tycoon, last index means beggar, this is order in which people finished a round
         self.finished_players = [False] * self.num_players    # Contains booleans indicating if players have finished for a round
+        
+        self.second_last_play = None        # Records the second last played move (not a pass)
         
         self.times_usurped = [0] * self.num_players
         self.times_started = [0] * self.num_players
@@ -263,7 +265,6 @@ class Game:
         self.round_end = False
         current_player_index = 0        # Index of current player
         last_played_card_index = None   # Index of the player who last played a card (not pass)
-        ltw_index = None                # ltw_index -> last trick winner index
         round_no = self.data["round_no"]
         
         while not self.round_end:
@@ -279,8 +280,7 @@ class Game:
                 
                 if (current_player_index == last_played_card_index \
                     or is_eight_stop(self.data["play_to_beat"])    \
-                    or threespade_played_after_joker(current_trick)):           
-                    ltw_index = current_player_index
+                    or (play_is_joker(self.second_last_play) and self.data["play_to_beat"] == ["3S"])):           
                     self.trick_end = True
                     continue
 
@@ -319,7 +319,7 @@ class Game:
                         
                     print("Player", player.name, "played", " ".join(move))
                     if self.data["play_to_beat"] != None and self.data["play_to_beat"] != []:
-                        self.second_last_play = move
+                        self.second_last_play = self.data["play_to_beat"]
                     self.data["play_to_beat"] = move
                 
                     last_played_card_index = current_player_index
@@ -335,7 +335,6 @@ class Game:
                     player_idx = self.playerlist.index(player.name)
                     self.finished_players[player_idx] = True
                     self.num_finished += 1
-                    
                     
                     # Player beat the previous tycoon
                     if round_no > 0:
@@ -366,15 +365,6 @@ class Game:
             current_player_index = last_played_card_index
             trick_winner_name = self.playerlist[last_played_card_index]
             print("Player", trick_winner_name, "has won current Trick")
-            # print()
-            
-            # THIS SHOULD NOT BE DONE, KEEP PLAYERLIST ORDER SAME PER ROUND
-            # CHOOSE TO SKIP PLAYERS AT START OF TRICK LOOP
-            # # Reset order of play to start new trick
-            # self.playerlist = self.playerlist[ltw_index:] + self.playerlist[:ltw_index]
-            # self.trick_end = False
-
-            
 
             # Reset trick information
             last_played_card_index = None

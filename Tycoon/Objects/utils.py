@@ -1,8 +1,6 @@
 # Tycoon hand utilities
-import typing
-
 from Objects.consts import *
-
+import typing
 
 def sort_hand(cards: typing.Sequence[str], is_rev=False) -> None:
     """
@@ -53,19 +51,19 @@ def is_eight_stop(cards: typing.Sequence[str]) -> bool:
     rank_set = set([card[0] for card in temp_cards])
     return len(rank_set) == 1 and list(rank_set)[0] == "8"
 
-def threespade_played_after_joker(current_trick: list) -> bool:
-    """
-    Check if a 3S was played after a joker
-    """
-    if len(current_trick) < 2:
-        return False
-    return is_joker(current_trick[-2]) and (current_trick[-1] == "3S")
-
 def is_joker(card: str) -> bool:
     """
     Check if a card is a Joker
     """
     return card == JOKER_RED or card == JOKER_BLACK
+
+def play_is_joker(card: list) -> bool:
+    """
+    Check if a single play is a Joker
+    """
+    if card == None or card == []:
+        return False
+    return is_joker(card[0]) 
 
 
 def has_joker(cards: typing.Sequence[str]) -> bool:
@@ -149,7 +147,8 @@ def is_higher_play(is_this_higher: list, than_this: list, is_rev=False):
     if len(is_this_higher) == 1:
         # One exception - if last card was any Joker and next card is the Three of Spades
         # then the Three of Spades is a higher play
-        if is_joker(than_this) and is_this_higher == "3S":
+    
+        if has_joker(than_this) and is_this_higher == ["3S"]:
             return True
         return get_card_score(is_this_higher, is_rev) > get_card_score(
             than_this, is_rev

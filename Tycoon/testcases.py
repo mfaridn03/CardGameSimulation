@@ -61,6 +61,18 @@ class TestDeck(unittest.TestCase):
 
         card_list = ["3S", "ZR"]
         self.assertEqual(get_pair_score(card_list, is_rev=True), 12)
+        
+    def test_is_higher_play(self):
+        """
+        Testing the is_higher_play function
+        """
+        is_this_higher = ["3S"]
+        than_this = [JOKER_BLACK]
+        
+        self.assertTrue(is_higher_play(is_this_higher, than_this, is_rev=False))
+        
+        than_this = [JOKER_RED]
+        self.assertTrue(is_higher_play(is_this_higher, than_this, is_rev=False))
 
     def test_deck_shuffle(self):
         """
